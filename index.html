@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>이미지 이어붙이기</title>
 
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎶</text></svg>">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧩</text></svg>">
 
   <style>
   :root{
@@ -18,8 +18,6 @@
     --font-primary:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,'Noto Sans KR',sans-serif;
     --font-secondary:var(--font-primary);
 
-    --thumb-size: 140px;
-    --thumb-size-mobile: 128px;
     --thumb-gap: 10px;
   }
   body.dark-mode{
@@ -68,15 +66,15 @@
   .panel-header{margin-bottom:1rem;border-bottom:2px solid var(--accent-primary);padding-bottom:.7rem;display:flex;justify-content:space-between;align-items:center}
   .panel-header h2{font-size:1.18rem;font-weight:800;color:var(--text-primary)}
 
-  /* 항상 수직 스택(PC 포함) */
+  /* ✅ PC에서도 수직 배치 고정 */
   #editor-sheet{display:flex;flex-direction:column;gap:1.6rem;align-items:stretch}
 
   .settings-panel{width:100%}
   .results-panel{width:100%}
 
-  .divider{height:1px;background:var(--panel-border);margin:1.1rem 0;border:none}
+  .divider{height:1px;background:var(--panel-border);margin:.9rem 0;border:none}
 
-  .input-group{display:flex;flex-direction:column;margin-bottom:1.05rem}
+  .input-group{display:flex;flex-direction:column;margin-bottom:1.0rem} /* ✅ 옵션 상하 간격 약간 확대 */
   .input-group label{font-size:.93rem;font-weight:700;color:var(--text-primary);margin-bottom:.45rem}
   .input-wrapper{
     position:relative; display:flex; align-items:center; background:var(--input-bg);
@@ -100,18 +98,23 @@
   .btn.active{background:var(--accent-primary); color:#fff; border-color:var(--accent-primary)}
 
   .upload-block{padding:12px;border:1px dashed var(--panel-border);border-radius:12px;background:var(--input-bg)}
-  .thumb-area{width:100%} /* 내부 스크롤 제거 */
+
+  /* ✅ 썸네일 컨테이너: 스크롤바 제거 */
+  .thumb-area{overflow:visible;width:100%}
+
+  /* ✅ PC: 6열 고정 + 자동크기, 튀어나옴 방지 */
   .thumb-grid{
     display:grid;
-    grid-template-columns: repeat(6, var(--thumb-size)); /* PC 6개 고정 */
+    grid-template-columns: repeat(6, minmax(0, 1fr));
     gap: var(--thumb-gap);
-    width: calc(6 * var(--thumb-size) + 5 * var(--thumb-gap)); /* 내부 스크롤 없이 정확 폭 */
+    width: 100%;
+    max-width: 100%;
     margin: 10px auto 0;
   }
   .thumb{
     position:relative;
-    width: var(--thumb-size);
-    height: var(--thumb-size);
+    width:100%;
+    aspect-ratio:1/1; /* 기존 형태 유지(정사각형), 크기만 자동 */
     overflow:hidden;
     border:1px solid var(--panel-border);
     border-radius:10px;
@@ -127,29 +130,29 @@
   .box h4{margin:0 0 8px}
   canvas{max-width:100%;border:1px dashed var(--panel-border);border-radius:10px;background:transparent}
 
-  /* 로딩 오버레이 (4.8.3 스타일 기반, GIF 크게, 문구는 아래 박스형) */
+  /* ===== 로딩 오버레이 ===== */
   #loadingOverlay{
     position:fixed; inset:0; display:none;
-    align-items:center; justify-content:center; flex-direction:column;
-    background:rgba(0,0,0,.45); z-index:9999; backdrop-filter:blur(1.5px);
-    padding:16px; text-align:center;
+    align-items:center; justify-content:center; flex-direction:column; /* ✅ 텍스트를 아래로 */
+    background:rgba(0,0,0,.35); z-index:9999; backdrop-filter:blur(1.5px);
+    padding:16px;
   }
   #loadingOverlay.show{display:flex}
-  /* GIF 크기 고정 400x268, 왜곡 방지 */
+  /* ✅ GIF 크게 (요청 사이즈) */
   #loadingGif{
     width:400px; height:268px;
-    object-fit:contain; image-rendering:auto; display:block; margin:0 auto 12px auto;
+    max-width:calc(100vw - 40px); max-height:calc(100vh - 160px);
+    object-fit:contain; image-rendering:auto; margin-bottom:12px;
   }
-  /* 박스형 문구 + 아주 소폭 글자 확대 */
-  .loadingTextBox{
-    display:inline-block;
-    background:rgba(0,0,0,.66);
-    color:#fff; font-weight:800;
-    padding:10px 14px;
-    border-radius:10px;
-    font-size:19px; /* 소폭 증가 */
+  /* ✅ 박스형 텍스트 + 아주 소폭 폰트 증가 */
+  #loadingText{
+    font-weight:800; font-size:19px; /* 소폭 증가 */
+    color:#fff; background:rgba(0,0,0,.55);
+    padding:10px 14px; border-radius:10px;
+    text-align:center;
   }
-  .loadingTextBox .dots{display:inline-block; min-width:18px}
+  #loadingText .dots::after{content:'...';animation:dots 1s steps(3,end) infinite}
+  @keyframes dots{0%{content:'';}33%{content:'.';}66%{content:'..';}100%{content:'...';}}
 
   @media (max-width:640px){
     body{padding:1rem}
@@ -157,12 +160,11 @@
     .version-info{right:1rem; font-size:.7rem; display:flex; flex-direction:column; align-items:flex-end}
     .theme-toggle{left:1rem}
     .app-header h1{font-size:1.5rem}
-    /* 모바일 2개 고정 */
+    /* ✅ 모바일: 2열 고정 */
     .thumb-grid{
-      grid-template-columns: repeat(2, var(--thumb-size-mobile));
-      width: calc(2 * var(--thumb-size-mobile) + 1 * var(--thumb-gap));
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      width: 100%;
     }
-    .thumb{width: var(--thumb-size-mobile); height: var(--thumb-size-mobile)}
   }
   </style>
 </head>
@@ -170,9 +172,7 @@
   <!-- 로딩 -->
   <div id="loadingOverlay" aria-live="polite" aria-busy="true">
     <img id="loadingGif" src="loading.gif" alt="loading">
-    <div class="loadingTextBox">
-      <span id="loadingText">가은이가 열심히 만들고 있어요! 💫</span><span class="dots"></span>
-    </div>
+    <div id="loadingText">가은이가 열심히 만들고 있어요! 💫<span class="dots"></span></div>
   </div>
 
   <div class="container">
@@ -286,7 +286,7 @@
               <button class="btn btn-chip fmtBtn" data-format="image/png">PNG</button>
             </div>
           </div>
-          <div id="jpegQualityRow" class="input-group" style="margin-top:.6rem">
+          <div id="jpegQualityRow" class="input-group">
             <label for="qualityInput">JPEG 품질</label>
             <div class="input-wrapper">
               <input id="qualityInput" type="number" min="50" max="100" step="1" value="100"/><span style="padding:0 12px;color:var(--text-secondary)">%</span>
@@ -302,7 +302,7 @@
           <div id="statusLine" class="small" style="margin-top:.6rem"></div>
         </section>
 
-        <!-- 우측(아래) -->
+        <!-- 우측(하단) -->
         <section class="panel results-panel">
           <div class="panel-header">
             <h2>미리보기</h2>
@@ -373,12 +373,12 @@
   const previewSmall=document.getElementById('previewSmall');
   const sizeHint=document.getElementById('sizeHint');
 
-  // 로딩 오버레이 요소 (4.8.3에서 발췌 적용)
+  // 로딩 오버레이 요소
   const loadingOverlay=document.getElementById('loadingOverlay');
 
   let dotsTimer=null;
   function startDots(){
-    const dotsEl=document.querySelector('.loadingTextBox .dots');
+    const dotsEl=document.querySelector('#loadingText .dots');
     let n=0;
     stopDots();
     dotsTimer=setInterval(()=>{
@@ -388,7 +388,7 @@
   }
   function stopDots(){
     if(dotsTimer){ clearInterval(dotsTimer); dotsTimer=null; }
-    const dotsEl=document.querySelector('.loadingTextBox .dots');
+    const dotsEl=document.querySelector('#loadingText .dots');
     if(dotsEl) dotsEl.textContent='';
   }
   function showLoading(){ loadingOverlay.classList.add('show'); startDots(); }
@@ -396,6 +396,7 @@
 
   const MAX_TOTAL_MB=300;
   const PREVIEW_MAX_H=10000;
+  const SLICE_SRC_H=1024;
 
   let images=[]; // {src,name,rotation}
   let orient='vertical';
@@ -482,18 +483,56 @@
   document.querySelectorAll('.fmtBtn').forEach(b=>b.addEventListener('click',()=>{ document.querySelectorAll('.fmtBtn').forEach(x=>x.classList.toggle('active',x===b)); format=b.dataset.format; updateUIByFormat(); updateStatus(); }));
 
   function loadImage(obj){return new Promise(res=>{const i=new Image(); i.onload=()=>res(i); i.src=obj.src;});}
-  function drawImageSliced(ctx, img, sw, sh, dw, dh, cx, cy, rad){
-    ctx.save(); ctx.translate((cx|0), (cy|0)); ctx.rotate(rad);
-    ctx.imageSmoothingEnabled=true; ctx.imageSmoothingQuality='high';
-    const scaleX = dw / sw, scaleY = dh / sh;
+
+  /* === ★ Seam-safe 슬라이스 드로잉 (흰 줄 방지) ===
+     - 누적 반올림(carry)로 각 조각의 정수 높이 합이 정확히 일치
+     - 소스 1px 오버랩으로 경계부 샘플링 균일화
+     - 마지막 조각에서 남은 높이 일괄 보정
+  */
+  function drawImageSlicedSeamless(ctx, img, sw, sh, dw, dh, cx, cy, rad, SL=SLICE_SRC_H){
+    ctx.save();
+    ctx.translate((cx|0), (cy|0));
+    ctx.rotate(rad);
+
+    // 정수화된 대상 폭/높이
     const destW = Math.max(1, Math.round(dw));
-    const halfW = destW/2;
-    for(let sy=0; sy<sh; sy+=1024){
-      const shSeg=Math.min(1024, sh - sy);
-      const dhSeg=shSeg*scaleY;
-      const dy=-dh/2 + sy*scaleY;
-      ctx.drawImage(img, 0, sy, sw, shSeg, Math.round(-halfW), Math.round(dy), destW, Math.max(1, Math.round(dhSeg)));
+    const destH = Math.max(1, Math.round(dh));
+    const scaleY = destH / sh;
+
+    let sy = 0;
+    let destY = -destH/2; // 중심 기준 상단부터
+    let carry = 0;
+    let remaining = destH;
+
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+
+    while (sy < sh) {
+      const seg = Math.min(SL, sh - sy); // 이번 소스 세그먼트 높이
+      // 소스 오버랩: 위/아래 1px 포함(가장자리 범위 보정)
+      const srcY = (sy === 0) ? 0 : (sy - 1);
+      const srcH = Math.min(sh - srcY, seg + (sy===0?0:1) + ((sy+seg)<sh?1:0));
+
+      const fh = seg * scaleY; // 부동소수 대상 높이
+      let ih = Math.floor(fh + carry); // 정수 대상 높이
+      // 마지막 세그먼트는 남은 높이에 맞춰 강제 보정
+      if (sy + seg >= sh) ih = remaining;
+      carry = (fh + carry) - ih;
+
+      const drawX = Math.round(-destW/2);
+      const drawY = Math.round(destY);
+
+      ctx.drawImage(
+        img,
+        0, srcY, sw, srcH,
+        drawX, drawY, destW, Math.max(1, ih)
+      );
+
+      destY += ih;
+      remaining -= ih;
+      sy += seg;
     }
+
     ctx.restore();
   }
 
@@ -570,20 +609,24 @@
   async function renderPreview(canvas, placements, totalW, totalH, maxW, maxH){
     const ctx=canvas.getContext('2d',{alpha:true});
     const scale=Math.min(maxW/totalW, maxH/totalH, 1);
-    canvas.width=Math.max(1, Math.floor(totalW*scale));
-    canvas.height=Math.max(1, Math.floor(totalH*scale));
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    ctx.fillStyle='#ffffff'; ctx.fillRect(0,0,canvas.width,canvas.height);
+    const dW=Math.max(1, Math.floor(totalW*scale));
+    const dH=Math.max(1, Math.floor(totalH*scale));
+    canvas.width=dW; canvas.height=dH;
+
+    // 프리뷰는 흰 배경
+    ctx.clearRect(0,0,dW,dH);
+    ctx.fillStyle='#ffffff'; ctx.fillRect(0,0,dW,dH);
     ctx.imageSmoothingEnabled=true; ctx.imageSmoothingQuality='high';
+
     for(const p of placements){
-      drawImageSliced(
+      drawImageSlicedSeamless(
         ctx, p.it.img,
         p.it.img.width, p.it.img.height,
         Math.max(1, Math.round(p.it.drawWsrc*scale)),
         Math.max(1, Math.round(p.it.drawHsrc*scale)),
         Math.round((p.x + p.it.drawWeff/2)*scale),
         Math.round((p.y + p.it.drawHeff/2)*scale),
-        p.it.rad
+        p.it.rad, SLICE_SRC_H
       );
     }
   }
@@ -602,7 +645,13 @@
 
     ctx.imageSmoothingEnabled=true; ctx.imageSmoothingQuality='high';
     for(const p of placements){
-      drawImageSliced(ctx, p.it.img, p.it.img.width, p.it.img.height, p.it.drawWsrc, p.it.drawHsrc, p.x + p.it.drawWeff/2, p.y + p.it.drawHeff/2, p.it.rad);
+      drawImageSlicedSeamless(
+        ctx, p.it.img,
+        p.it.img.width, p.it.img.height,
+        p.it.drawWsrc, p.it.drawHsrc,
+        p.x + p.it.drawWeff/2, p.y + p.it.drawHeff/2,
+        p.it.rad, SLICE_SRC_H
+      );
     }
 
     if(useOff){ return await c.convertToBlob({type:format, quality:(format==='image/jpeg'?quality:undefined)}); }
