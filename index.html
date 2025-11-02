@@ -67,12 +67,16 @@
   }
   .panel-header{margin-bottom:1rem;border-bottom:2px solid var(--accent-primary);padding-bottom:.7rem;display:flex;justify-content:space-between;align-items:center}
   .panel-header h2{font-size:1.18rem;font-weight:800;color:var(--text-primary)}
-  #editor-sheet{display:flex;gap:1.6rem;align-items:flex-start}
-  .settings-panel{flex:1;min-width:320px;max-width:480px}
-  .results-panel{flex:2;min-width:420px}
-  .divider{height:1px;background:var(--panel-border);margin:.9rem 0;border:none}
 
-  .input-group{display:flex;flex-direction:column}
+  /* 항상 수직 스택(PC 포함) */
+  #editor-sheet{display:flex;flex-direction:column;gap:1.6rem;align-items:stretch}
+
+  .settings-panel{width:100%}
+  .results-panel{width:100%}
+
+  .divider{height:1px;background:var(--panel-border);margin:1.1rem 0;border:none}
+
+  .input-group{display:flex;flex-direction:column;margin-bottom:1.05rem}
   .input-group label{font-size:.93rem;font-weight:700;color:var(--text-primary);margin-bottom:.45rem}
   .input-wrapper{
     position:relative; display:flex; align-items:center; background:var(--input-bg);
@@ -96,12 +100,12 @@
   .btn.active{background:var(--accent-primary); color:#fff; border-color:var(--accent-primary)}
 
   .upload-block{padding:12px;border:1px dashed var(--panel-border);border-radius:12px;background:var(--input-bg)}
-  .thumb-area{overflow:visible;width:100%}
+  .thumb-area{width:100%} /* 내부 스크롤 제거 */
   .thumb-grid{
     display:grid;
-    grid-template-columns: repeat(6, var(--thumb-size));
+    grid-template-columns: repeat(6, var(--thumb-size)); /* PC 6개 고정 */
     gap: var(--thumb-gap);
-    width: calc(6 * var(--thumb-size) + 5 * var(--thumb-gap));
+    width: calc(6 * var(--thumb-size) + 5 * var(--thumb-gap)); /* 내부 스크롤 없이 정확 폭 */
     margin: 10px auto 0;
   }
   .thumb{
@@ -123,39 +127,37 @@
   .box h4{margin:0 0 8px}
   canvas{max-width:100%;border:1px dashed var(--panel-border);border-radius:10px;background:transparent}
 
-  /* 로딩 오버레이 */
+  /* 로딩 오버레이 (4.8.3 스타일 기반, GIF 크게, 문구는 아래 박스형) */
   #loadingOverlay{
     position:fixed; inset:0; display:none;
     align-items:center; justify-content:center; flex-direction:column;
-    background:rgba(0,0,0,.35); z-index:9999; backdrop-filter:blur(1.5px);
-    text-align:center; padding:16px;
+    background:rgba(0,0,0,.45); z-index:9999; backdrop-filter:blur(1.5px);
+    padding:16px; text-align:center;
   }
   #loadingOverlay.show{display:flex}
-  /* GIF 크기 고정 (400x268) 및 비율 유지 */
+  /* GIF 크기 고정 400x268, 왜곡 방지 */
   #loadingGif{
     width:400px; height:268px;
-    object-fit:contain; image-rendering:auto; margin-bottom:12px;
+    object-fit:contain; image-rendering:auto; display:block; margin:0 auto 12px auto;
   }
-  /* 박스형 텍스트 + 소폭 폰트 증가 */
-  #loadingText{
-    font-weight:800;
-    font-size:22px; /* 소폭 증가 */
-    color:#fff;
-    background:rgba(255,255,255,.16);
-    border:1px solid rgba(255,255,255,.28);
-    border-radius:12px;
-    padding:10px 16px;
-    text-shadow:0 1px 2px rgba(0,0,0,.6);
+  /* 박스형 문구 + 아주 소폭 글자 확대 */
+  .loadingTextBox{
+    display:inline-block;
+    background:rgba(0,0,0,.66);
+    color:#fff; font-weight:800;
+    padding:10px 14px;
+    border-radius:10px;
+    font-size:19px; /* 소폭 증가 */
   }
+  .loadingTextBox .dots{display:inline-block; min-width:18px}
 
   @media (max-width:640px){
     body{padding:1rem}
-    #editor-sheet{flex-direction:column;gap:1.3rem}
-    .settings-panel,.results-panel{width:100%;min-width:unset;max-width:none}
     .app-header{padding:1rem; padding-top:4rem; border-radius:0 0 16px 16px}
     .version-info{right:1rem; font-size:.7rem; display:flex; flex-direction:column; align-items:flex-end}
     .theme-toggle{left:1rem}
     .app-header h1{font-size:1.5rem}
+    /* 모바일 2개 고정 */
     .thumb-grid{
       grid-template-columns: repeat(2, var(--thumb-size-mobile));
       width: calc(2 * var(--thumb-size-mobile) + 1 * var(--thumb-gap));
@@ -168,7 +170,9 @@
   <!-- 로딩 -->
   <div id="loadingOverlay" aria-live="polite" aria-busy="true">
     <img id="loadingGif" src="loading.gif" alt="loading">
-    <div id="loadingText">가은이가 열심히 만들고 있어요! 💫<span class="dots"></span></div>
+    <div class="loadingTextBox">
+      <span id="loadingText">가은이가 열심히 만들고 있어요! 💫</span><span class="dots"></span>
+    </div>
   </div>
 
   <div class="container">
@@ -191,7 +195,7 @@
 
     <main class="content-wrapper">
       <div id="editor-sheet" class="sheet-content">
-        <!-- 좌측 -->
+        <!-- 좌측(상단) -->
         <section class="panel settings-panel">
           <div class="panel-header"><h2>업로드 및 옵션</h2></div>
 
@@ -216,7 +220,7 @@
 
           <hr class="divider" />
 
-          <div class="input-group" style="margin-bottom:.8rem">
+          <div class="input-group">
             <label>합치기 방향</label>
             <div style="display:flex;gap:.5rem;flex-wrap:wrap">
               <button class="btn btn-chip orientBtn active" data-orient="vertical">세로로 합치기</button>
@@ -224,7 +228,7 @@
             </div>
           </div>
 
-          <div class="input-group" style="margin-bottom:.8rem">
+          <div class="input-group">
             <label>가로 크기</label>
             <div style="display:flex;flex-wrap:wrap;gap:.5rem">
               <button class="btn btn-chip widthBtn active" data-width="auto">자동 (가장 큰 사진에 맞춤)</button>
@@ -240,7 +244,7 @@
             <div class="small" id="sizeHint">세로 합치기: 폭 기준 · 가로 합치기: 높이 기준</div>
           </div>
 
-          <div class="input-group" style="margin-bottom:.8rem">
+          <div class="input-group">
             <label>배치 방식</label>
             <div style="display:flex;gap:.5rem;flex-wrap:wrap">
               <button class="btn btn-chip layoutBtn active" data-layout="scale">비율 유지 (기준 크기에 맞춰 자동 스케일)</button>
@@ -248,7 +252,7 @@
             </div>
           </div>
 
-          <div id="padOptions" class="input-group hidden" style="margin-bottom:.8rem">
+          <div id="padOptions" class="input-group hidden">
             <label>정렬 · 배경</label>
             <div style="display:flex; gap:.5rem; flex-wrap:wrap">
               <div class="input-wrapper" style="min-width:140px">
@@ -268,7 +272,7 @@
             </div>
           </div>
 
-          <div class="input-group" style="margin-bottom:.8rem">
+          <div class="input-group">
             <label for="gapInput">이미지 간격</label>
             <div class="input-wrapper">
               <input id="gapInput" type="number" value="0"/><span style="padding:0 12px;color:var(--text-secondary)">px</span>
@@ -298,7 +302,7 @@
           <div id="statusLine" class="small" style="margin-top:.6rem"></div>
         </section>
 
-        <!-- 우측 -->
+        <!-- 우측(아래) -->
         <section class="panel results-panel">
           <div class="panel-header">
             <h2>미리보기</h2>
@@ -369,12 +373,12 @@
   const previewSmall=document.getElementById('previewSmall');
   const sizeHint=document.getElementById('sizeHint');
 
-  // 로딩 오버레이 요소
+  // 로딩 오버레이 요소 (4.8.3에서 발췌 적용)
   const loadingOverlay=document.getElementById('loadingOverlay');
 
   let dotsTimer=null;
   function startDots(){
-    const dotsEl=document.querySelector('#loadingText .dots');
+    const dotsEl=document.querySelector('.loadingTextBox .dots');
     let n=0;
     stopDots();
     dotsTimer=setInterval(()=>{
@@ -384,7 +388,7 @@
   }
   function stopDots(){
     if(dotsTimer){ clearInterval(dotsTimer); dotsTimer=null; }
-    const dotsEl=document.querySelector('#loadingText .dots');
+    const dotsEl=document.querySelector('.loadingTextBox .dots');
     if(dotsEl) dotsEl.textContent='';
   }
   function showLoading(){ loadingOverlay.classList.add('show'); startDots(); }
@@ -393,7 +397,7 @@
   const MAX_TOTAL_MB=300;
   const PREVIEW_MAX_H=10000;
 
-  let images=[];                    // {src,name,rotation}
+  let images=[]; // {src,name,rotation}
   let orient='vertical';
   let selectedBase='auto';
   let layout='scale';
@@ -615,7 +619,7 @@
 
       // 축소 먼저, 큰 미리보기 다음
       await renderPreview(previewSmall, placements, totalW, totalH, 700, 380);
-      await renderPreview(previewLarge, placements, totalW, totalH, 2000, 10000);
+      await renderPreview(previewLarge, placements, totalW, totalH, 2000, PREVIEW_MAX_H);
 
       const blob=await buildBlob(placements,totalW,totalH);
       const mb=(blob.size/1048576).toFixed(2);
